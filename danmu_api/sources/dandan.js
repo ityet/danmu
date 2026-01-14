@@ -4,6 +4,7 @@ import { log } from "../utils/log-util.js";
 import { httpGet } from "../utils/http-util.js";
 import { addAnime, removeEarliestAnime } from "../utils/cache-util.js";
 import { simplized } from "../utils/zh-util.js";
+import { SegmentListResponse } from '../models/dandan-model.js';
 
 // =====================
 // 获取弹弹play弹幕
@@ -14,7 +15,7 @@ export default class DandanSource extends BaseSource {
       const resp = await httpGet(`https://api.danmaku.weeblify.app/ddp/v1?path=/v2/search/anime?keyword=${keyword}`, {
         headers: {
           "Content-Type": "application/json",
-          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+          "User-Agent": `LogVar Danmu API/${globals.version}`,
         },
       });
 
@@ -50,7 +51,7 @@ export default class DandanSource extends BaseSource {
       const resp = await httpGet(`https://api.danmaku.weeblify.app/ddp/v1?path=/v2/bangumi/${id}`, {
         headers: {
           "Content-Type": "application/json",
-          "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36",
+          "User-Agent": `LogVar Danmu API/${globals.version}`,
         },
       });
 
@@ -164,6 +165,24 @@ export default class DandanSource extends BaseSource {
       });
       return allDanmus; // 返回已收集的 episodes
     }
+  }
+
+  async getEpisodeDanmuSegments(id) {
+    log("info", "获取弹弹play弹幕分段列表...", id);
+
+    return new SegmentListResponse({
+      "type": "dandan",
+      "segmentList": [{
+        "type": "dandan",
+        "segment_start": 0,
+        "segment_end": 30000,
+        "url": id
+      }]
+    });
+  }
+
+  async getEpisodeSegmentDanmu(segment) {
+    return this.getEpisodeDanmu(segment.url);
   }
 
   formatComments(comments) {
